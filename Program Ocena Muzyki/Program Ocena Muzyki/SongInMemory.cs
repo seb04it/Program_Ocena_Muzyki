@@ -4,19 +4,29 @@
     {
         public List<Song> songs = new List<Song>();
 
+        public override event OperationSuccesfulDelegate Succesful;
+
         public override void AddSong()
         {
             Console.Write("Podaj tytuł piosenki: ");
             string title = Console.ReadLine();
             Console.Write("Podaj artystę: ");
             string author = Console.ReadLine();
-            if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(author))
+            if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(author))
+            {
+                throw new Exception("Piosenka musi posiadać tytuł oraz artystę");
+            }
+
+            bool songExists = songs.Any(song => song.Title.Equals(title, StringComparison.OrdinalIgnoreCase) && song.Author.Equals(author, StringComparison.OrdinalIgnoreCase));
+            if (!songExists)
             {
                 songs.Add(new Song { Title = title, Author = author, Rating = 0 });
+                Succesful(this, new EventArgs());
+                return;
             }
             else
             {
-                Console.WriteLine("Piosenka musi posiadać tytuł oraz artystę");
+                throw new Exception("Piosenka o podanym tytule i artyście już istnieje na liście.");
             }
         }
 
@@ -47,11 +57,11 @@
             {
                 string deletedSongTitle = songs[songInput - 1].Title;
                 songs.RemoveAt(songInput - 1);
-                Console.WriteLine($"Piosenka '{deletedSongTitle}' została usunięta.");
+                Succesful(this, new EventArgs());
             }
             else
             {
-                Console.WriteLine("Niepoprawny wybór piosenki.");
+                throw new Exception("Niepoprawny wybór piosenki.");
             }
         }
 
@@ -73,8 +83,8 @@
                 }
             }
 
-            Console.WriteLine("Statystyki: ");
-            Console.WriteLine($"\nNajwyżej oceniona piosenka: {FindSongByRating(songStatistics.Max)} (ocena: {songStatistics.Max})");
+            Console.WriteLine("\nStatystyki: ");
+            Console.WriteLine($"Najwyżej oceniona piosenka: {FindSongByRating(songStatistics.Max)} (ocena: {songStatistics.Max})");
             Console.WriteLine($"Najniżej oceniona piosenka: {FindSongByRating(songStatistics.Min)} (ocena: {songStatistics.Min})");
             Console.WriteLine($"Średnia ocena wszystkich piosenek: {songStatistics.Average:F2}");
         }
@@ -106,7 +116,6 @@
                 }
 
                 Console.Write("Wybierz numer piosenki do oceny (lub 'Q' aby zakończyć): ");
-
                 var input = Console.ReadLine().ToUpper();
 
                 if (input == "Q")
@@ -120,18 +129,17 @@
                     if (int.TryParse(Console.ReadLine(), out int rating) && rating >= 1 && rating <= 10)
                     {
                         songs[songInput - 1].Rating = rating;
-                        Console.WriteLine("Ocena została dodana pomyślnie.");
-
+                        Succesful(this, new EventArgs());
                     }
                     else
                     {
-                        Console.Write("Niepoprawna ocena. Wprowadź liczbę od 1 do 10: ");
+                        throw new Exception("Niepoprawna ocena. Wprowadź liczbę od 1 do 10: ");
                     }
 
                 }
                 else
                 {
-                    Console.WriteLine("Niepoprawny wybór piosenki.");
+                    throw new Exception("Niepoprawny wybór piosenki.");
                 }
             }
         }

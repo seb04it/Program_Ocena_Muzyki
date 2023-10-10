@@ -3,24 +3,35 @@
     public class SongInFile : SongBase
     {
         public const string fileSong = "songs.txt";
+
+        public override event OperationSuccesfulDelegate Succesful;
         public override void AddSong()
         {
+            List<Song> songs = ReadSongFromFile();
+
             Console.Write("Podaj tytuł piosenki: ");
             string title = Console.ReadLine();
             Console.Write("Podaj artystę: ");
             string author = Console.ReadLine();
             int rating = 0;
-            if (!string.IsNullOrEmpty(title) && !string.IsNullOrEmpty(author))
+            if (string.IsNullOrEmpty(title) && string.IsNullOrEmpty(author))
+            {
+                throw new Exception("Piosenka musi posiadać tytuł oraz artystę.");
+            }
+
+            bool songExists = songs.Any(song => song.Title.Equals(title, StringComparison.OrdinalIgnoreCase) && song.Author.Equals(author, StringComparison.OrdinalIgnoreCase));
+            if (!songExists)
             {
                 using (var writer = File.AppendText(fileSong))
                 {
                     writer.WriteLine($"{title};{author};{rating}");
-                    Console.WriteLine("Utwór dodano pomyślnie.");
+                    Succesful(this, new EventArgs());
+                    return;
                 }
             }
             else
             {
-                Console.WriteLine("Piosenka musi posiadać tytuł oraz artystę.");
+                throw new Exception("Piosenka o podanym tytule i artyście już istnieje na liście.");
             }
         }
 
@@ -30,8 +41,7 @@
 
             if (songs.Count == 0)
             {
-                Console.WriteLine("Brak dostępnych piosenek do usunięcia.");
-                return;
+                throw new Exception("Brak dostępnych piosenek do usunięcia.");
             }
 
             Console.WriteLine("\nLista piosenek: ");
@@ -58,11 +68,11 @@
                         writer.WriteLine($"{song.Title};{song.Author};{song.Rating}");
                     }
                 }
-                Console.WriteLine("Utwór został usunięty pomyślnie.");
+                Succesful(this, new EventArgs());
             }
             else
             {
-                Console.WriteLine("Niepoprawny numer piosenki do usunięcia.");
+                throw new Exception("Niepoprawny numer piosenki do usunięcia.");
             }
         }
 
@@ -72,8 +82,7 @@
 
             if (songs.Count == 0)
             {
-                Console.WriteLine("Brak dostępnych piosenek.");
-                return;
+                throw new Exception("Brak dostępnych piosenek.");
             }
 
             Statistics songStatistics = new Statistics();
@@ -109,8 +118,7 @@
 
             if (songs.Count == 0)
             {
-                Console.WriteLine("Brak dostępnych piosenek do oceny.");
-                return;
+                throw new Exception("Brak dostępnych piosenek do oceny.");
             }
             while (true)
             {
@@ -137,7 +145,7 @@
                     {
                         Song selectedSong = songs[songInput - 1];
                         selectedSong.Rating = rating;
-                        Console.WriteLine("Ocena została dodana pomyślnie.");
+                        Succesful(this, new EventArgs());
 
                         using (var writer = File.CreateText(fileSong))
                         {
@@ -149,12 +157,12 @@
                     }
                     else
                     {
-                        Console.WriteLine("Niepoprawna ocena. Ocena musi być w zakresie 1-10.");
+                        throw new Exception("Niepoprawna ocena. Ocena musi być w zakresie 1-10.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Nieporawny wybór, spróbuj ponownie.");
+                    throw new Exception("Nieporawny wybór, spróbuj ponownie.");
                 }
             }
         }
@@ -170,7 +178,7 @@
                     while ((line = reader.ReadLine()) != null)
                     {
                         string[] parts = line.Split(';');
-                        if (parts.Length >= 3)
+                        if (parts.Length == 3)
                         {
                             string title = parts[0];
                             string author = parts[1];

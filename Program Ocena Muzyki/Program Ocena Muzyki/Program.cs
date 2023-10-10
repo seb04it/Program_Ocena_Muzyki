@@ -31,7 +31,8 @@
                         return;
                     case "Q":
                         Console.WriteLine("Dziękuję za skorzystanie z programu!");
-                        return;
+                        Environment.Exit(0);
+                        break;
                     default:
                         Console.WriteLine("Proszę wybrać jedną z powyższych opcji.\n" +
                             "Wybrano: ");
@@ -41,41 +42,56 @@
         }
         static void Menu()
         {
+            program.Succesful += Program_OperationSuccesful;
+            void Program_OperationSuccesful(object sender, EventArgs args)
+            {
+                Console.WriteLine("Operacja przebiegła pomyślnie");
+            }
+
             Console.WriteLine("\n===========================================================================\n" +
                 "Witaj użytkowniku w programie do zapisu i oceny twojej muzyki!\n"
                + "===========================================================================");
             while (true)
             {
-                Console.Write("\nWybierz jedną opcję z poniższych: \n"
-                       + "1. Dodaj nową piosenkę\n"
-                       + "2. Usuń piosenkę\n"
-                       + "3. Oceń piosenki\n"
-                       + "4. Wyświetl statystyki\n"
-                       + "Q. Wyjdź\n" +
-                       "Wybrano: ");
-
-                var choice = Console.ReadLine().ToUpper();
-                switch (choice)
+                try
                 {
-                    case "1":
-                        program.AddSong();
-                        break;
-                    case "2":
-                        program.DeleteSong();
-                        break;
-                    case "3":
-                        program.RateSongs();
-                        break;
-                    case "4":
-                        program.GetSongsStatistics();
-                        break;
-                    case "Q":
-                        Console.WriteLine("Dziękuję za skorzystanie z programu!");
-                        return;
-                    default:
-                        Console.WriteLine("Proszę wybrać jedną z powyższych opcji.\n" +
-                            "Wybrano: ");
-                        continue;
+
+
+                    Console.Write("\nWybierz jedną opcję z poniższych: \n"
+                           + "1. Dodaj nową piosenkę\n"
+                           + "2. Usuń piosenkę\n"
+                           + "3. Oceń piosenki\n"
+                           + "4. Wyświetl statystyki\n"
+                           + "Q. Zamknij program\n" +
+                           "Wybrano: ");
+
+                    var choice = Console.ReadLine().ToUpper();
+                    switch (choice)
+                    {
+                        case "1":
+                            program.AddSong();
+                            break;
+                        case "2":
+                            program.DeleteSong();
+                            break;
+                        case "3":
+                            program.RateSongs();
+                            break;
+                        case "4":
+                            program.GetSongsStatistics();
+                            break;
+                        case "Q":
+                            Console.WriteLine("Dziękuję za skorzystanie z programu!");
+                            return;
+                        default:
+                            Console.WriteLine("Proszę wybrać jedną z powyższych opcji.\n" +
+                                "Wybrano: ");
+                            continue;
+                    }
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Wystąpił błąd: {ex.Message}");
                 }
             }
         }
